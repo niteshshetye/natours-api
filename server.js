@@ -11,7 +11,6 @@ const app = require('./app');
 
 const connectToDB = async () => {
   try {
-    console.log(process.env.MONGO_URL);
     await mongoose.connect(process.env.MONGO_URL);
     const port = process.env.PORT || 3001;
     app.listen(port, () => {
