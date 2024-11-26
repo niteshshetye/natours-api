@@ -1,0 +1,12 @@
+version: '3.1'
+
+services:
+  mongo:
+    image: mongo
+    restart: always
+    container_name: natours_database
+    ports:
+      - 27017:27017
+    env_file:
+      - ./mongo.env
+      
