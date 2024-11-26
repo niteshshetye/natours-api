@@ -23,7 +23,8 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'Please provide a password'],
-    minlength: [8, 'Password should atleast ({VALUE}) character']
+    minlength: [8, 'Password should atleast ({VALUE}) character'],
+    select: false
   },
   confirmPassword: {
     type: String,
@@ -34,7 +35,8 @@ const userSchema = new mongoose.Schema({
       validator: function(value) {
         return value === this.password;
       }
-    }
+    },
+    select: false
   }
 });
 
@@ -45,6 +47,13 @@ userSchema.pre('save', async function(next) {
   this.confirmPassword = undefined;
   next();
 });
+
+userSchema.methods.correctPassword = async function(
+  candidatePassword,
+  userPassword
+) {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
 
 const User = mongoose.model('User', userSchema);
 
