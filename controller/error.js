@@ -38,6 +38,14 @@ const handleDuplicateErrorDB = err => {
   return new AppError(400, message);
 };
 
+const handleJwtInvalidError = () => {
+  return new AppError(401, 'Invalid token.');
+};
+
+const handleJwtExpiredError = () => {
+  return new AppError(401, 'Your token is expired, please login again!');
+};
+
 const handleValidationErrorDB = err => {
   const errors = Object.values(err.errors).map(error => error.message);
   const message = `Invalid input data. ${errors.join('. ')}`;
@@ -65,6 +73,14 @@ module.exports = (error, req, res, next) => {
 
     if (error.name === 'ValidationError') {
       err = handleValidationErrorDB(error);
+    }
+
+    if (error.name === 'JsonWebTokenError') {
+      err = handleJwtInvalidError();
+    }
+
+    if (error.name === 'TokenExpiredError') {
+      err = handleJwtExpiredError();
     }
 
     sendErrorProd(err, res);

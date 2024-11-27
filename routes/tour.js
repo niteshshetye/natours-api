@@ -9,6 +9,7 @@ const {
   getTourStats,
   getYearlyPlan
 } = require('../controller/tour');
+const { verifyToken } = require('../controller/auth');
 
 const router = express.Router();
 
@@ -20,8 +21,8 @@ router.route('/top-5-cheap').get(getTop5Tours, getTourList);
 
 router
   .route('/')
-  .get(getTourList)
-  .post(createTour);
+  .get(verifyToken, getTourList)
+  .post(verifyToken, createTour);
 
 router
   .route('/:id')
