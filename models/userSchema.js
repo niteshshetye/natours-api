@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
-// eslint-disable-next-line import/no-extraneous-dependencies
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -20,6 +20,11 @@ const userSchema = new mongoose.Schema({
     validate: [validator.isEmail, 'Email is invalid']
   },
   photoURL: String,
+  role: {
+    type: String,
+    enum: ['user', 'guide', 'lead-guide', 'admin'],
+    default: 'user'
+  },
   password: {
     type: String,
     required: [true, 'Please provide a password'],
@@ -38,11 +43,20 @@ const userSchema = new mongoose.Schema({
     },
     select: false
   },
-  passwordChangedAt: Date
+  passwordChangedAt: Date,
+  passwordResetToken: String,
+  passwordResetExpires: Date
 });
 
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
+
+  if (!this.isNew) {
+    // because we are checking the change password and token issue time
+    // and in reset password we are issuing new token
+    // so for that for safer side we saving 1 sec before time stamp of change password
+    this.passwordChangedAt = Date.now() - 1000;
+  }
 
   this.password = await bcrypt.hash(this.password, 12);
   this.confirmPassword = undefined;
@@ -67,6 +81,21 @@ userSchema.methods.changedPassword = function(jwtTimeStamp) {
   }
 
   return false;
+};
+
+userSchema.methods.generateResetPasswordToken = function() {
+  const resetPasswordToken = crypto.randomBytes(32).toString('hex');
+
+  // encrypted token store in database
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetPasswordToken)
+    .digest('hex');
+
+  // expires after 10 min
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetPasswordToken;
 };
 
 const User = mongoose.model('User', userSchema);
