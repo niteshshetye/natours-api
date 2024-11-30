@@ -182,3 +182,43 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     data: { token, user: { email: user.email, name: user.name } }
   });
 });
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  // 1) get the user from collection
+  const user = await User.findOne({
+    email: req.user.email
+  }).select('+password');
+
+  if (!user) {
+    return next(new AppError(404, 'User with this email is not exist'));
+  }
+
+  // 2) check if the posted password is correct
+  const isPasswordMatched = await user.correctPassword(
+    req.body.currentPassword,
+    user.password
+  );
+
+  if (!isPasswordMatched) {
+    return next(new AppError(404, 'Password does not matched!'));
+  }
+
+  // 3) if so, updated password
+  user.password = req.body.password;
+  user.confirmPassword = req.body.confirmPassword;
+  await user.save();
+
+  // 4) Log user in, send jwt
+  const token = signToken({ id: user._id, email: user.email });
+
+  return res.status(200).json({
+    status: 'success',
+    data: {
+      token,
+      user: {
+        name: user.name,
+        email: user.email
+      }
+    }
+  });
+});

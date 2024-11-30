@@ -3,7 +3,9 @@ const {
   signup,
   signin,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  updatePassword,
+  verifyToken
 } = require('../controller/auth');
 
 const router = express.Router();
@@ -11,6 +13,7 @@ const router = express.Router();
 router.route('/signup').post(signup);
 router.route('/signin').post(signin);
 
+router.route('/change-password').patch(verifyToken, updatePassword);
 router.route('/forgot-password').post(forgotPassword);
 router.route('/reset-password/:token').post(resetPassword);
 
