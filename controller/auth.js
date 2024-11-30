@@ -17,17 +17,21 @@ const verifyToken = token => {
   return promisify(jwt.verify)(token, process.env.JWT_SECRET);
 };
 
-exports.signup = catchAsync(async (req, res, next) => {
-  const user = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    confirmPassword: req.body.confirmPassword
-  });
-
+const createSendToken = (statusCode, user, res) => {
   const token = signToken({ id: user._id, email: user.email });
 
-  return res.status(201).json({
+  const cookieOption = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true
+  };
+
+  if (process.env.NODE_ENV === 'production') cookieOption.secure = true;
+
+  res.cookie('jwt', token, cookieOption);
+
+  return res.status(statusCode).json({
     status: 'success',
     data: {
       token,
@@ -37,6 +41,17 @@ exports.signup = catchAsync(async (req, res, next) => {
       }
     }
   });
+};
+
+exports.signup = catchAsync(async (req, res, next) => {
+  const user = await User.create({
+    name: req.body.name,
+    email: req.body.email,
+    password: req.body.password,
+    confirmPassword: req.body.confirmPassword
+  });
+
+  return createSendToken(201, user, res);
 });
 
 exports.signin = catchAsync(async (req, res, next) => {
@@ -52,12 +67,7 @@ exports.signin = catchAsync(async (req, res, next) => {
     return next(new AppError(401, 'Incorrect email or password'));
   }
 
-  const token = signToken({ id: user._id, email: user.email });
-
-  return res.status(200).json({
-    status: 'success',
-    data: { token, user: { email: user.email, name: user.name } }
-  });
+  return createSendToken(200, user, res);
 });
 
 exports.verifyToken = catchAsync(async (req, res, next) => {
@@ -175,12 +185,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   // log the user in send jwt
-  const token = signToken({ id: user._id, email: user.email });
-
-  return res.status(200).json({
-    status: 'success',
-    data: { token, user: { email: user.email, name: user.name } }
-  });
+  return createSendToken(200, user, res);
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
@@ -209,16 +214,5 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   // 4) Log user in, send jwt
-  const token = signToken({ id: user._id, email: user.email });
-
-  return res.status(200).json({
-    status: 'success',
-    data: {
-      token,
-      user: {
-        name: user.name,
-        email: user.email
-      }
-    }
-  });
+  return createSendToken(200, user, res);
 });
