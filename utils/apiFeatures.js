@@ -5,7 +5,7 @@ class APIFeatures {
   }
 
   filter() {
-    let queryObj = Object.assign({}, this.queryString); // deep copy
+    let queryObj = { ...this.queryString }; // deep copy
 
     // 1) FILTERING
     const excludedFields = ['page', 'sort', 'limit', 'fields'];

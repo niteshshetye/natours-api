@@ -16,7 +16,7 @@ exports.getTourList = catchAsync(async (req, res, next) => {
   // query
   const features = new APIFeatures(Tour, req.query)
     .filter()
-    .sort('-created_at')
+    .sort('-email')
     .limitFields()
     .pagination(0, 5);
 
