@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Tour = require('./tourSchema');
 
 // review, rating , createdAt, ref to tour, ref to user
 const reviewSchema = new mongoose.Schema(
@@ -32,6 +33,36 @@ const reviewSchema = new mongoose.Schema(
     toObject: { virtuals: true }
   }
 );
+
+// static methods
+reviewSchema.statics.calcAverageRatings = async function(tourId) {
+  // this point to modal
+  const stats = await this.aggregate([
+    { $match: { tourId } },
+    {
+      $group: {
+        _id: '$tourId',
+        nRating: { $sum: 1 },
+        averageRating: { $avg: '$rating' }
+      }
+    }
+  ]);
+
+  if (!stats.length) return;
+
+  await Tour.findByIdAndUpdate(tourId, {
+    ratingsAverage: stats[0].averageRating,
+    ratingsQuantity: stats[0].nRating
+  });
+};
+
+reviewSchema.post('save', function() {
+  // below line not gone work as we have not define Review yet
+  // Review.calcAverageRatings(this.tourId);
+
+  // hence we have to do it like this
+  this.constructor.calcAverageRatings(this.tourId);
+});
 
 reviewSchema.pre(/^find/, function(next) {
   // populate({
