@@ -1,4 +1,5 @@
 const express = require('express');
+const reviewRouter = require('./review');
 const {
   getTourList,
   createTour,
@@ -12,6 +13,8 @@ const {
 const { verifyToken, allowedRoles } = require('../controller/auth');
 
 const router = express.Router();
+
+router.use('/:tourId/reviews', reviewRouter);
 
 router.route('/stats').get(getTourStats);
 router.route('/yearly-plan/:year').get(getYearlyPlan);

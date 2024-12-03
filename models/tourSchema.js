@@ -76,7 +76,32 @@ const tourSchema = new mongoose.Schema(
     secretTour: {
       type: Boolean,
       default: false
-    }
+    },
+    startLocation: {
+      // GeoJSON to specify geo location
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point']
+      },
+      coordinates: [Number],
+      address: String,
+      description: String
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point']
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number
+      }
+    ],
+    guides: [{ type: mongoose.Schema.ObjectId, ref: 'User' }] // child refrencing
   },
   {
     toJSON: { virtuals: true }, // without this virtual properties not will added in response
@@ -91,6 +116,13 @@ const tourSchema = new mongoose.Schema(
 // NOTE: we have used the function delcaration to use "this" keyword
 tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7;
+});
+
+// virtual populate
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tourId',
+  localField: '_id'
 });
 
 // **DOCUMENT MIDDLEWARE:
@@ -113,15 +145,26 @@ tourSchema.pre('save', function(next) {
 tourSchema.pre(/^find/, function(next) {
   // tourSchema.pre('find', function(next) {
   this.find({ secretTour: { $ne: true } });
-  this.start = Date.now();
+  // this.start = Date.now();
   next();
 });
+
 // tourSchema.pre('findOne', function(next) {
 //   this.find({ secretTour: { $ne: true } });
 //   next();
 // });
-tourSchema.post(/^find/, function(_docs, next) {
-  console.log(`Query took: ${Date.now() - this.start} ms`);
+// tourSchema.post(/^find/, function(_docs, next) {
+//   console.log(`Query took: ${Date.now() - this.start} ms`);
+//   next();
+// });
+
+tourSchema.pre(/^find/, function(next) {
+  // this point to query
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt'
+  });
+
   next();
 });
 
