@@ -8,7 +8,9 @@ const {
   deleteTour,
   getTop5Tours,
   getTourStats,
-  getYearlyPlan
+  getYearlyPlan,
+  toursWithin,
+  getDistances
 } = require('../controller/tour');
 const { verifyToken, allowedRoles } = require('../controller/auth');
 
@@ -22,15 +24,23 @@ router.route('/yearly-plan/:year').get(getYearlyPlan);
 // Route Aliasing
 router.route('/top-5-cheap').get(getTop5Tours, getTourList);
 
+router.use(verifyToken);
+
+router
+  .route('/tours-within/:distance/center/:latlng/unit/:unit')
+  .get(toursWithin);
+
+router.route('/distances/:latlng/unit/:unit').get(getDistances);
+
 router
   .route('/')
-  .get(verifyToken, getTourList)
-  .post(verifyToken, allowedRoles('admin', 'lead-guide'), createTour);
+  .get(getTourList)
+  .post(allowedRoles('admin', 'lead-guide'), createTour);
 
 router
   .route('/:id')
-  .get(verifyToken, getTourById)
-  .patch(verifyToken, allowedRoles('admin', 'lead-guide'), updateTour)
-  .delete(verifyToken, allowedRoles('admin', 'lead-guide'), deleteTour);
+  .get(getTourById)
+  .patch(allowedRoles('admin', 'lead-guide'), updateTour)
+  .delete(allowedRoles('admin', 'lead-guide'), deleteTour);
 
 module.exports = router;

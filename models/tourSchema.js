@@ -111,6 +111,9 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+// index for geo special key
+tourSchema.index({ startLocation: '2dsphere' });
+
 // virtual durationWeeks
 // this virtual property create each time when we get data from database => .get()
 // This we use mostly when we can simply calculate the property using availabel resources instead of storing them in the database
@@ -175,10 +178,10 @@ tourSchema.pre(/^find/, function(next) {
 
 // **AGGREGATION MIDDLEWARE:
 // this refer to current aggragation object
-tourSchema.pre('aggregate', function(next) {
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-  next();
-});
+// tourSchema.pre('aggregate', function(next) {
+//   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+//   next();
+// });
 
 const Tour = mongoose.model('Tour', tourSchema);
 
