@@ -27,40 +27,40 @@ exports.updateReview = catchAsync(async (req, res, next) => {
     return next(new AppError(404, 'Please check payload!'));
   }
 
-  const review = await Review.findOne({
-    _id: req.params.id,
-    userId: req.user._id
-  });
+  // const review = await Review.findOne({
+  //   _id: req.params.id,
+  //   userId: req.user._id
+  // });
 
-  if (!review) {
-    return next(new AppError(404, 'Review not found!'));
+  // if (!review) {
+  //   return next(new AppError(404, 'You not allowed to update others review!'));
+  // }
+
+  const updatedReview = await Review.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true, runValidators: true }
+  );
+
+  if (!updatedReview) {
+    return next(new AppError(404, 'You not allowed to update others review!'));
   }
 
-  if (req.body.review) {
-    review.review = req.body.review;
-  }
-
-  if (req.body.rating) {
-    review.rating = req.body.rating;
-  }
-
-  const newReview = await review.save();
-
-  return res.status(200).json({ status: 'sucess', data: { newReview } });
+  return res
+    .status(200)
+    .json({ status: 'sucess', data: { review: updatedReview } });
 });
 
 exports.deleteReview = catchAsync(async (req, res, next) => {
   const reviewId = req.params.id;
 
-  const review = await Review.findOne({ _id: reviewId, userId: req.user._id });
+  // const review = await Review.findOne({ _id: reviewId, userId: req.user._id });
 
-  if (!review) {
-    return next(new AppError(404, 'You not allowed to delete others review!'));
-  }
+  // if (!review) {
+  //   return next(new AppError(404, 'You not allowed to delete others review!'));
+  // }
 
-  await Review.deleteOne({
-    _id: reviewId
-  });
+  await Review.findByIdAndDelete(reviewId);
 
-  return res.status(200).json({ status: 'sucess', data: null });
+  return res.status(204).json({ status: 'sucess', data: null });
 });

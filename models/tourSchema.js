@@ -32,7 +32,9 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       default: 4.5,
       min: [1, 'Rating must be above 1.0'],
-      max: [5, 'Rating must be below 5.0']
+      max: [5, 'Rating must be below 5.0'],
+      // setter function run allways when create
+      set: val => Math.round(val * 10) / 10 // 4.666667 * 10 => 46.66667 => round => 47 / 10 => 4.7
     },
     ratingsQuantity: {
       type: Number,
@@ -142,6 +144,9 @@ tourSchema.pre('save', function(next) {
 
 // **QUERY MIDDLEWARE:
 // * this will refer to current query and not the document
+// * in query middleware this we can access only on "pre method"
+// * and not really in "post method" becuase query is already exicuted and
+// * we no longer have access to that query.
 tourSchema.pre(/^find/, function(next) {
   // tourSchema.pre('find', function(next) {
   this.find({ secretTour: { $ne: true } });
