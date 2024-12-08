@@ -5,6 +5,8 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const compression = require('compression');
+
 const tourRouter = require('./routes/tour');
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
@@ -53,6 +55,7 @@ app.use(
 
 // serving static files
 app.use(express.static(`${__dirname}/public`));
+app.use(compression());
 
 // Routes
 app.use('/api/v1/tour', tourRouter);
