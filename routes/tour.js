@@ -10,7 +10,9 @@ const {
   getTourStats,
   getYearlyPlan,
   toursWithin,
-  getDistances
+  getDistances,
+  uploadTourImages,
+  resizeTourImages
 } = require('../controller/tour');
 const { verifyToken, allowedRoles } = require('../controller/auth');
 
@@ -40,7 +42,12 @@ router
 router
   .route('/:id')
   .get(getTourById)
-  .patch(allowedRoles('admin', 'lead-guide'), updateTour)
+  .patch(
+    allowedRoles('admin', 'lead-guide'),
+    uploadTourImages,
+    resizeTourImages,
+    updateTour
+  )
   .delete(allowedRoles('admin', 'lead-guide'), deleteTour);
 
 module.exports = router;
