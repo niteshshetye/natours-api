@@ -8,6 +8,7 @@ const hpp = require('hpp');
 const tourRouter = require('./routes/tour');
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
+const bookingRouter = require('./routes/booking');
 const reviewRouter = require('./routes/review');
 const globalError = require('./controller/error');
 const notFound = require('./controller/not-found');
@@ -58,6 +59,7 @@ app.use('/api/v1/tour', tourRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
+app.use('/api/v1/booking', bookingRouter);
 
 // run if no route found
 // make sure you add this in the end
