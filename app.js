@@ -6,6 +6,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
 const compression = require('compression');
+const cors = require('cors');
 
 const tourRouter = require('./routes/tour');
 const authRouter = require('./routes/auth');
@@ -16,6 +17,14 @@ const globalError = require('./controller/error');
 const notFound = require('./controller/not-found');
 
 const app = express();
+
+app.enable('trust proxy');
+// cors
+app.use(cors());
+
+// handle preflight request
+app.options('*', cors());
+
 // set security http headers
 app.use(helmet());
 
