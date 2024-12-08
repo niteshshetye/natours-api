@@ -2,7 +2,9 @@ const express = require('express');
 const {
   getUsersList,
   updateUserDetails,
-  deleteUser
+  deleteUser,
+  uploadUserPhoto,
+  resizeUserPhoto
 } = require('../controller/users');
 const { verifyToken, allowedRoles } = require('../controller/auth');
 
@@ -12,6 +14,6 @@ routes
   .route('/')
   .get(verifyToken, allowedRoles('admin'), getUsersList)
   .delete(verifyToken, deleteUser)
-  .patch(verifyToken, updateUserDetails);
+  .patch(verifyToken, uploadUserPhoto, resizeUserPhoto, updateUserDetails);
 
 module.exports = routes;
